@@ -13,7 +13,6 @@ export async function verifikasiPenyedia(
     email.length > 254
   )
     throw new Error("Email atau status peninjauan tidak valid.");
-
   const c = await pool.connect();
   let mulai = false,
     rusak;
@@ -46,7 +45,6 @@ export async function verifikasiPenyedia(
     c.release(rusak);
   }
 }
-
 if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
@@ -55,7 +53,8 @@ if (
   try {
     const cloud = process.argv.includes("--cloud");
     const tujuan = cloud
-      ? (process.env.CLOUD_CONFIRM_DATABASE ?? process.env.DEMO_CONFIRM_DATABASE)
+      ? (process.env.CLOUD_CONFIRM_DATABASE ??
+        process.env.DEMO_CONFIRM_DATABASE)
       : "sisabaik_dev";
     if (cloud) {
       if (
@@ -71,7 +70,6 @@ if (
       process.env.PGDATABASE !== tujuan
     )
       throw new Error("Peninjauan lokal hanya untuk sisabaik_dev.");
-
     const args = process.argv
       .slice(2)
       .filter((x) => !["--cloud", "--tolak"].includes(x));
@@ -79,14 +77,12 @@ if (
       throw new Error(
         "Gunakan: npm run penyedia:verifikasi -- email@domain.com [--tolak]",
       );
-
     ({ pool } = await import("../src/db/pool.js"));
     const db = await pool.query(
       "SELECT current_database() AS nama,(SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid()) AS tls",
     );
     if (db.rows[0].nama !== tujuan || (cloud && !db.rows[0].tls))
       throw new Error("Database tujuan atau TLS tidak sesuai.");
-
     const r = await verifikasiPenyedia(
       pool,
       args[0],

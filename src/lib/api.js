@@ -1,13 +1,13 @@
-export class HttpError extends Error { 
-    constructor(status, code, message) {
-        super(message);
+export class HttpError extends Error {
+  constructor(status, code, message) {
+    super(message);
     this.status = status;
     this.code = code;
   }
 }
 
 export const salah = (pesan) => {
-  throw new HttpError(400, "VALIDATION ERROR", pesan);
+  throw new HttpError(400, "VALIDATION_ERROR", pesan);
 };
 
 export function idValid(nilai, nama = "id") {
@@ -64,6 +64,7 @@ export function halamanValid(query) {
   const limit = baca("limit", 10, 50);
   return { page, limit, offset: (page - 1) * limit };
 }
+
 export function metaHalaman(jumlah, paging) {
   return {
     jumlah,
@@ -102,11 +103,16 @@ export function penawaranValid(body) {
     "status",
     "berakhirPada",
   ]);
-const hasil = {
+  const hasil = {
     penyediaId: idValid(body.penyediaId, "penyediaId"),
     nama: teksValid(body.nama, "nama", 3, 120),
     kategori: teksValid(body.kategori, "kategori", 1, 40),
-    hargaNormal: angkaValid(body.hargaNormal, "hargaNormal", 1, 999999999999),
+    hargaNormal: angkaValid(
+      body.hargaNormal,
+      "hargaNormal",
+      1,
+      999999999999,
+    ),
     hargaPenawaran: angkaValid(
       body.hargaPenawaran,
       "hargaPenawaran",
@@ -134,7 +140,8 @@ const hasil = {
   const tahun = Number(waktu.slice(0, 4));
   const bulan = Number(waktu.slice(5, 7));
   const hari = Number(waktu.slice(8, 10));
-  const kabisat = tahun % 4 === 0 && (tahun % 100 !== 0 || tahun % 400 === 0);
+  const kabisat =
+    tahun % 4 === 0 && (tahun % 100 !== 0 || tahun % 400 === 0);
   const hariBulan = [
     31,
     kabisat ? 29 : 28,
@@ -165,6 +172,7 @@ const hasil = {
   }
   return { ...hasil, berakhirPada: tanggal.toISOString() };
 }
+
 export function pesananValid(body) {
   objekValid(body, ["emailPembeli", "items"]);
   const emailPembeli = teksValid(body.emailPembeli, "emailPembeli", 3, 254);

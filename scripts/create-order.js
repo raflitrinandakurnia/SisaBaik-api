@@ -5,7 +5,8 @@ const penawaranId = Number(process.argv[3] ?? 1);
 const kuantitas = Number(process.argv[4] ?? 1);
 
 if (!Number.isInteger(penawaranId) || !Number.isInteger(kuantitas) || kuantitas < 1) {
-    console.error("penawaranId dan kuantitas harus berupa bilangan bulat positif.");
+
+console.error("penawaranId dan kuantitas harus berupa bilangan bulat positif.");
   process.exitCode = 1;
 } else {
   let client;
@@ -24,10 +25,10 @@ if (!Number.isInteger(penawaranId) || !Number.isInteger(kuantitas) || kuantitas 
 
     const penawaran = await client.query(
       `SELECT id, penyedia_id, nama, harga_normal, harga_penawaran,
-        stok, status, berakhir_pada
-      FROM penawaran
-      WHERE id = $1
-      FOR UPDATE`,
+              stok, status, berakhir_pada
+       FROM penawaran
+       WHERE id = $1
+       FOR UPDATE`,
       [penawaranId]
     );
     if (penawaran.rowCount !== 1) throw new Error("Penawaran tidak ditemukan.");
@@ -40,18 +41,19 @@ if (!Number.isInteger(penawaranId) || !Number.isInteger(kuantitas) || kuantitas 
 
     const pesanan = await client.query(
       `INSERT INTO pesanan (pembeli_id, penyedia_id)
-      VALUES ($1, $2)
-      RETURNING id`,
+       VALUES ($1, $2)
+       RETURNING id`,
       [pembeli.rows[0].id, item.penyedia_id]
     );
     const pesananId = pesanan.rows[0].id;
+
     await client.query(
       `INSERT INTO detail_pesanan (
-        pesanan_id, penawaran_id, penyedia_id, kuantitas,
-        harga_normal_satuan, harga_penawaran_satuan
-      ) VALUES ($1, $2, $3, $4, $5, $6)`,
+         pesanan_id, penawaran_id, penyedia_id, kuantitas,
+         harga_normal_satuan, harga_penawaran_satuan
+       ) VALUES ($1, $2, $3, $4, $5, $6)`,
       [pesananId, item.id, item.penyedia_id, kuantitas,
-      item.harga_normal, item.harga_penawaran]
+       item.harga_normal, item.harga_penawaran]
     );
 
     await client.query(
@@ -61,14 +63,14 @@ if (!Number.isInteger(penawaranId) || !Number.isInteger(kuantitas) || kuantitas 
 
     const diperbarui = await client.query(
       `UPDATE pesanan AS ps
-      SET total_transaksi = r.total,
-        nilai_stok_terselamatkan = r.nilai_stok
-      FROM (
-        SELECT SUM(subtotal) AS total, SUM(nilai_stok) AS nilai_stok
-        FROM detail_pesanan WHERE pesanan_id = $1
-      ) AS r
-      WHERE ps.id = $1
-      RETURNING ps.*`,
+       SET total_transaksi = r.total,
+           nilai_stok_terselamatkan = r.nilai_stok
+       FROM (
+         SELECT SUM(subtotal) AS total, SUM(nilai_stok) AS nilai_stok
+         FROM detail_pesanan WHERE pesanan_id = $1
+       ) AS r
+       WHERE ps.id = $1
+       RETURNING ps.*`,
       [pesananId]
     );
 
@@ -83,7 +85,10 @@ if (!Number.isInteger(penawaranId) || !Number.isInteger(kuantitas) || kuantitas 
       });
     }
     console.error("Pesanan dibatalkan:", error.message);
-    process.exitCode = 1;
-} finally { client?.release(); await pool.end();
-}
+
+process.exitCode = 1;
+  } finally {
+    client?.release();
+    await pool.end();
+  }
 }
