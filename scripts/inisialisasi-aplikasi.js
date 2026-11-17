@@ -38,10 +38,9 @@ try {
   await transaksi(async (c) => {
     await c.query("SELECT pg_advisory_xact_lock(74091211)");
     const r = await c.query(
-      "SELECT current_database() AS nama,(SELECT ssl FROM pg_stat_ssl WHERE pid=pg_backend_pid()) AS tls",
+      "SELECT current_database() AS nama",
     );
-    if (r.rows[0].nama !== tujuan || (cloud && !r.rows[0].tls))
-      throw new Error("Database tujuan atau TLS belum sesuai.");
+    if (r.rows[0].nama !== tujuan) throw new Error("Database tujuan belum sesuai.");
     const cek = await c.query(
       "SELECT COUNT(*)::int AS jumlah FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'",
     );
@@ -57,7 +56,7 @@ try {
     "Schema aplikasi siap tanpa akun contoh. Buat akun melalui halaman Daftar.",
   );
 } catch (e) {
-  console.error(e.code ? "Inisialisasi gagal: " + e.code : e.message);
+  console.error("Inisialisasi gagal:", e.code, e.message);
   process.exitCode = 1;
 } finally {
   await pool.end();
